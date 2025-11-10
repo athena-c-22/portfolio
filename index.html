@@ -9,6 +9,9 @@
     header { background: #222; color: #fff; padding: 40px 20px; text-align: center; }
     section { padding: 40px 20px; max-width: 900px; margin: auto; }
     h2 { margin-top: 0; }
+      .skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+      .skill-card { border: 1px solid #eee; padding: 16px; border-radius: 8px; background: #fff; }
+      .skill-card h4 { margin: 0 0 8px 0; }
     .projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
     .project-card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
     footer { background: #f5f5f5; text-align: center; padding: 20px; margin-top: 40px; }
@@ -22,7 +25,7 @@
 
   <section id="about">
     <h2>About Me</h2>
-    <p>I am a Computer Science student with experience across software development, data analysis, and applied research. My work spans full‑stack applications, algorithmic problem solving, and technical projects developed during hackathons and collaborative research programmes. I enjoy building solutions that are both technically robust and user‑centric, and I have hands‑on experience with Python, JavaScript, React, and backend services such as Firebase.</p>
+    <p>I am a Computer Science student with a strong interest in AI-driven automation, particularly in applying intelligent systems to complex operational domains such as travel. I have experience building backend and applied ML systems, including computer vision/NLP pipelines, heuristic decision engines, and integration-heavy prototypes. My projects often involve designing end-to-end architectures that combine frontend interfaces, API layers, and ML models. I work quickly and iteratively, focusing on shipping reliable, production-style prototypes under tight time constraints.</p>
   </section>
 
   <section id="projects">
@@ -36,14 +39,175 @@
       <div class="project-card">
         <h3>Lost & Found Platform</h3>
         <p>Developed during Minerva’s Hack, this platform combines OpenCV-based image recognition, NLTK-powered natural language processing, Cloud Firestore, and Google Maps API to match lost items with reported findings. The project was shortlisted as one of the top four solutions out of twelve teams, recognised for its practical design and technical execution.</p>
+        <p>Architecture diagram:</p>
+        <pre style="
+  background:#f5f5f5;
+  padding:8px;
+  border-radius:8px;
+  font-family: 'Courier New', monospace;
+  font-size:13px;
+  white-space:pre;
+  overflow-x:auto;
+">
+Frontend  →  API Server  →  ML Pipeline  →  Database
+(React)      (Flask)        (CV/NLP)         (Firestore)
+        </pre>
+        <h4>Model Choices and Reasoning</h4>
+        <ul>
+          <li>Visual features (OpenCV): ORB/SIFT-style keypoints for speed + robustness to scale/lighting; good fit for mobile photos with varied backgrounds.</li>
+          <li>Text signals (NLTK): Lightweight keyword/TF-IDF to leverage user captions (“black North Face puffer”, “AirPods Gen 3 case”).</li>
+          <li>Scoring: Weighted fusion of image similarity + text overlap; tuned on hackathon set for high precision in top-3 results.</li>
+          <li>Infra: Cloud Firestore for low-latency queries; Google Maps API to factor geospatial proximity into ranking.</li>
+        </ul>
+        <h4>Examples of successful object matches</h4>
+        <ul>
+          <li>AirPods case: Matched finder’s photo (indoor yellow lighting) to owner’s upload (daylight) via ORB keypoints on the hinge + embossed text; caption overlap “Gen 3” boosted rank to #1.</li>
+          <li>Black puffer jacket: Differentiated among three similar jackets using zipper pull shape + logo position; caption “women’s S” narrowed candidates.</li>
+        </ul>
         <img src="images/lost_and_found.png" alt="Lost & Found Project" style="width:100%; border-radius:8px; margin-top:10px;" />
       </div>
       <div class="project-card">
         <h3>Tetris AI Bot</h3>
-        <p>I built an AI agent that plays Tetris by analysing every possible move and scoring board states using handcrafted heuristics. The system simulates piece placement, evaluates outcomes, and consistently selects the strongest action, demonstrating applied algorithm design and real-time decision-making.</p>
-        <video controls width="250" height="450" autoplay muted loop>
+        <h4>Problem Summary</h4>
+        <p>Built a Tetris AI that places incoming tetrominoes to maximize line clears under strict runtime limits and a vanilla-Python environment (no external libs). Implemented a fast board simulator plus scoring heuristics to evaluate all rotations/positions per piece.</p>
+        <p>State Evaluation Pipeline:</p>
+        <pre style="
+  background:#f5f5f5;
+  padding:8px;
+  border-radius:8px;
+  font-family: 'Courier New', monospace;
+  font-size:13px;
+  white-space:pre;
+  overflow-x:auto;
+"> ┌──────────────────┐
+ │    Current Board  │
+ │   (game state S)  │
+ └─────────┬────────┘
+           │
+           ▼
+ ┌──────────────────┐
+ │ Generate All      │
+ │ Possible Actions  │
+ │ (rotations/slots) │
+ └─────────┬────────┘
+           │
+           ▼
+ ┌──────────────────┐
+ │ Simulate Resulting│
+ │ States (S1...Sn)  │
+ └─────────┬────────┘
+           │
+           ▼
+ ┌──────────────────┐
+ │ Evaluate Features │
+ │ e.g.:              │
+ │ - board height     │
+ │ - holes            │
+ │ - bumpiness        │
+ │ - lines cleared    │
+ │ - transitions      │
+ └─────────┬────────┘
+           │
+           ▼
+ ┌──────────────────┐
+ │ Apply Heuristic   │
+ │   H(Si) = w • f    │
+ │  (weighted scoring)│
+ └─────────┬────────┘
+           │
+           ▼
+ ┌──────────────────┐
+ │ Select Best Move  │
+ │  argmax_i H(Si)   │
+ └──────────────────┘
+</pre>
+        <h4>Key Results</h4>
+        <ul>
+          <li>Peak score: 20737; median: 16636 over 5 runs.</li>
+          <li>Outperformed baseline random/greedy by 4122% on game score.</li>
+          <li>Move evaluation throughput: 1.8 placements/second on 12th Gen Intel(R) Core(TM) i7-1255U.</li>
+          <li>Heuristic ablation: removing “holes” penalty ↓ performance by 81%.</li>
+        </ul>
+          
+          <video controls width="250" height="450" autoplay muted loop>
           <source src="videos/tetris_ai_bot.mp4" type="video/mp4">
         </video>
+        <p>Code snippet of game move logic:</p>
+        <img src="images/tetris1.png" alt="Tetris code snippet" style="width:100%; border-radius:8px; margin-top:10px;" />
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2>Skills</h2>
+    <div class="skills">
+      <div class="skill-card">
+        <h4>Programming Languages</h4>
+        <ul>
+          <li>Python (data, backend, ML)</li>
+          <li>JavaScript / TypeScript (frontend & Node.js)</li>
+          <li>Java</li>
+          <li>C / C++</li>
+          <li>Solidity (smart contracts)</li>
+          <li>Rust</li>
+          <li>SQL (MySQL, PostgreSQL, SQLite)</li>
+        </ul>
+      </div>
+
+      <div class="skill-card">
+        <h4>Libraries, Frameworks & Tools</h4>
+        <ul>
+          <li>React, Vite</li>
+          <li>Flask, Django</li>
+          <li>TensorFlow, PyTorch, scikit-learn</li>
+          <li>OpenCV, NLTK</li>
+          <li>Docker, Git, Redis</li>
+          <li>Qiskit Metal, ElmerFEM (quantum design)</li>
+        </ul>
+      </div>
+      <div class="skill-card">
+        <h4>Skills</h4>
+        <ul>
+          <li>Automation logic</li>
+          <li>API integrations</li>
+          <li>Databases</li>
+          <li>System design for small-scale prototypes</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-i-work">
+    <h2>How I Work</h2>
+    <h2 id="how-i-work-title">Outcome‑focused dev for AI‑powered travel ops</h2>
+    <p class="lead">I design, build, and iterate quickly on backend, ML, and web systems. My focus: clear scope, tight feedback loops, strong observability, and production‑grade reliability.</p>
+    
+    <div class="grid">
+      <div class="card">
+        <h3 id="principles-title">Guiding principles</h3>
+        <ul>
+          <li>Start with the user journey &amp; operational KPIs.</li>
+          <li>Ship small, verifiable increments behind feature flags.</li>
+          <li>Measure with traces, logs, and tests; iterate from data.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 id="process-title">Process</h3>
+        <ul>
+          <li>Discover → write one‑pager (problem, constraints, risks).</li>
+          <li>Design → sequence diagram &amp; API/DB contracts.</li>
+          <li>Build → trunk‑based dev, CI, tests, observability.</li>
+          <li>Ship → canary, dashboards, post‑ship review.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 id="systems-title">Systems I build</h3>
+        <ul>
+          <li>APIs &amp; workers for LLM orchestration (RAG, tools, evals).</li>
+          <li>Data pipelines for analytics &amp; labeling loops.</li>
+          <li>Resilient services with retries, backoff, and idempotency.</li>
+        </ul>
       </div>
     </div>
   </section>
